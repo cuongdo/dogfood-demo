@@ -1,0 +1,163 @@
+.script-data-viewer {
+  width: 100%;
+  max-width: 1200px;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  margin: 2rem 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background-color: #2d2d2d;
+  border-bottom: 1px solid #404040;
+}
+
+.header h3 {
+  color: #ffffff;
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.refresh-btn, .retry-btn {
+  background-color: #4a9eff;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.refresh-btn:hover, .retry-btn:hover {
+  background-color: #3a8eef;
+}
+
+.loading, .no-data {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #cccccc;
+  font-size: 1rem;
+}
+
+.error {
+  padding: 2rem;
+  text-align: center;
+  color: #ff6666;
+}
+
+.error p {
+  margin: 0 0 1rem 0;
+}
+
+.table-container {
+  overflow-x: auto;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.script-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+}
+
+.script-table th {
+  background-color: #333333;
+  color: #ffffff;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #404040;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.script-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #333333;
+  vertical-align: top;
+  color: #e6e6e6;
+}
+
+.script-table tr:hover {
+  background-color: #2a2a2a;
+}
+
+.created-at {
+  white-space: nowrap;
+  font-size: 12px;
+  color: #cccccc;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.type.chat_message .type-badge {
+  background-color: #1a472a;
+  color: #4ade80;
+}
+
+.type.query .type-badge {
+  background-color: #1e40af;
+  color: #60a5fa;
+}
+
+.author {
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+.code, .response-text {
+  background-color: #1a1a1a;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #333333;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 300px;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.code {
+  color: #22d3ee;
+}
+
+.response-text {
+  color: #a3a3a3;
+}
+
+/* Scrollbar styling */
+.table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #555555;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #666666;
+}

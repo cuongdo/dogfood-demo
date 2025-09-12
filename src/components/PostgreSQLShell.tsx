@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useScriptOrchestrator } from '../contexts/ScriptOrchestratorContext'
 import './PostgreSQLShell.css'
 
 interface HistoryItem {
@@ -13,26 +14,120 @@ const PostgreSQLShell = () => {
     { type: 'info', content: 'Type "help" for help.' },
     { type: 'info', content: '' }
   ])
+  const MAX_HISTORY_LINES = 50 // Maximum number of history items to keep
+  const [isSimulating, setIsSimulating] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const shellRef = useRef<HTMLDivElement>(null)
+  const simulationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  
+  const { currentRow, onRowComplete, isActive } = useScriptOrchestrator()
 
   useEffect(() => {
     if (shellRef.current) {
-      shellRef.current.scrollTop = shellRef.current.scrollHeight
+      // Smooth scroll to bottom when new content is added
+      shellRef.current.scrollTo({
+        top: shellRef.current.scrollHeight,
+        behavior: 'smooth'
+      })
     }
   }, [history])
 
+  // Handle current row changes from orchestrator
+  useEffect(() => {
+    if (currentRow && currentRow.type === 'query' && currentRow.query && currentRow.response) {
+      simulateQuery(currentRow)
+    }
+  }, [currentRow])
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      clearTimeouts()
+    }
+  }, [])
+
+  const clearTimeouts = () => {
+    if (simulationTimeoutRef.current) {
+      clearTimeout(simulationTimeoutRef.current)
+      simulationTimeoutRef.current = null
+    }
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current)
+      typingIntervalRef.current = null
+    }
+  }
+
+  const simulateQuery = (row: any) => {
+    if (isSimulating) return // Prevent multiple simultaneous simulations
+    
+    setIsSimulating(true)
+    clearTimeouts()
+    
+    // Simulate typing the query
+    simulateTyping(row.query, () => {
+      // After typing is complete, execute the query
+      simulationTimeoutRef.current = setTimeout(() => {
+        executeSimulatedQuery(row)
+        
+        // Wait 2 seconds then notify completion
+        simulationTimeoutRef.current = setTimeout(() => {
+          setIsSimulating(false)
+          onRowComplete()
+        }, 2000)
+      }, 500)
+    })
+  }
+
+  const simulateTyping = (text: string, onComplete: () => void) => {
+    let currentIndex = 0
+    typingIntervalRef.current = setInterval(() => {
+      if (currentIndex <= text.length) {
+        setInput(text.substring(0, currentIndex))
+        currentIndex++
+      } else {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current)
+          typingIntervalRef.current = null
+        }
+        onComplete()
+      }
+    }, 50) // Typing speed
+  }
+
+  const addToHistory = (items: HistoryItem[]) => {
+    setHistory(prevHistory => {
+      const newHistory = [...prevHistory, ...items]
+      // Keep only the last MAX_HISTORY_LINES items
+      return newHistory.slice(-MAX_HISTORY_LINES)
+    })
+  }
+
+  const executeSimulatedQuery = (row: any) => {
+    const newItems = [
+      { 
+        type: 'command' as const, 
+        content: `postgres=# ${row.query}` 
+      },
+      { 
+        type: 'result' as const, 
+        content: row.response || 'No response available' 
+      }
+    ]
+    addToHistory(newItems)
+    setInput('')
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim()) return
-
-    const newHistory = [...history]
-    newHistory.push({ type: 'command', content: `postgres=# ${input}` })
+    if (!input.trim() || isSimulating) return
 
     const trimmedInput = input.trim().toLowerCase()
+    const commandItem = { type: 'command' as const, content: `postgres=# ${input}` }
+    let responseItem: HistoryItem
     
     if (trimmedInput === 'help') {
-      newHistory.push({ 
+      responseItem = { 
         type: 'result', 
         content: `You are using psql, the command-line interface to PostgreSQL.
 Type:  \\copyright for distribution terms
@@ -40,11 +135,11 @@ Type:  \\copyright for distribution terms
        \\? for help with psql commands
        \\g or terminate with semicolon to execute query
        \\q to quit` 
-      })
+      }
     } else if (trimmedInput === '\\q') {
-      newHistory.push({ type: 'info', content: 'Connection closed.' })
+      responseItem = { type: 'info', content: 'Connection closed.' }
     } else if (trimmedInput === '\\l' || trimmedInput === '\\list') {
-      newHistory.push({ 
+      responseItem = { 
         type: 'result', 
         content: `                                  List of databases
    Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
@@ -55,27 +150,28 @@ Type:  \\copyright for distribution terms
  template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
            |          |          |             |             | postgres=CTc/postgres
 (3 rows)` 
-      })
+      }
     } else if (trimmedInput === '\\dt') {
-      newHistory.push({ 
+      responseItem = { 
         type: 'result', 
         content: `         List of relations
  Schema | Name  | Type  |  Owner   
 --------+-------+-------+----------
  public | users | table | postgres
-(1 row)` 
-      })
+ public | script | table | postgres
+(2 rows)` 
+      }
     } else if (trimmedInput.startsWith('select') || trimmedInput.includes('select')) {
-      newHistory.push({ 
+      responseItem = { 
         type: 'result', 
         content: ` id |   name   |       email        
 ----+----------+--------------------
   1 | John Doe | john@example.com
   2 | Jane Doe | jane@example.com
 (2 rows)` 
-      })
+      }
     } else if (trimmedInput === '\\?') {
-      newHistory.push({ 
+      responseItem = { 
         type: 'result', 
         content: `General
   \\copyright             show PostgreSQL usage and distribution terms
@@ -86,12 +182,12 @@ Type:  \\copyright for distribution terms
 Informational
   \\l[+]   [PATTERN]      list databases
   \\dt[S+] [PATTERN]      list tables` 
-      })
+      }
     } else {
-      newHistory.push({ type: 'result', content: `ERROR:  syntax error at or near "${input}"` })
+      responseItem = { type: 'result', content: `ERROR:  syntax error at or near "${input}"` }
     }
 
-    setHistory(newHistory)
+    addToHistory([commandItem, responseItem])
     setInput('')
   }
 
@@ -126,6 +222,7 @@ Informational
             onChange={(e) => setInput(e.target.value)}
             className="shell-input"
             autoFocus
+            disabled={isSimulating}
           />
         </form>
       </div>
