@@ -33,6 +33,7 @@ export function ScriptOrchestratorProvider({ children }: ScriptOrchestratorProvi
     const loadScriptData = async () => {
       try {
         const data = await fetchAllScriptRows()
+        console.log('Loaded script data:', data)
         setAllRows(data)
         if (data.length > 0) {
           setIsActive(true)

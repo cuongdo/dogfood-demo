@@ -67,10 +67,9 @@ const ScriptDataViewer = () => {
               <tr>
                 <th>ID</th>
                 <th>Created At</th>
-                <th>Type</th>
-                <th>Author</th>
                 <th>Query</th>
                 <th>Response</th>
+                <th>Notice</th>
               </tr>
             </thead>
             <tbody>
@@ -78,10 +77,6 @@ const ScriptDataViewer = () => {
                 <tr key={row.id}>
                   <td>{row.id}</td>
                   <td className="created-at">{formatDateTime(row.created_at)}</td>
-                  <td className={`type ${row.type}`}>
-                    <span className="type-badge">{row.type}</span>
-                  </td>
-                  <td className="author">{row.author || '-'}</td>
                   <td className="query">
                     {row.query ? (
                       <pre className="code">{row.query}</pre>
@@ -92,6 +87,13 @@ const ScriptDataViewer = () => {
                   <td className="response">
                     {row.response ? (
                       <pre className="response-text">{row.response}</pre>
+                    ) : (
+                      '-'
+                    )}
+                  </td>
+                  <td className="notice">
+                    {row.notice ? (
+                      <span className="notice-text">{row.notice}</span>
                     ) : (
                       '-'
                     )}

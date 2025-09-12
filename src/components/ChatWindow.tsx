@@ -3,8 +3,7 @@ import { useScriptOrchestrator } from '../contexts/ScriptOrchestratorContext'
 import './ChatWindow.css'
 
 interface ChatMessage {
-  author: string
-  message: string
+  notice: string
   timestamp: string
 }
 
@@ -17,15 +16,14 @@ const ChatWindow = () => {
 
   // Handle current row changes from orchestrator
   useEffect(() => {
-    if (currentRow && currentRow.type === 'chat_message' && currentRow.author && currentRow.response) {
-      displayChatMessage(currentRow)
+    if (currentRow && currentRow.notice) {
+      displayNotice(currentRow)
     }
   }, [currentRow])
 
-  const displayChatMessage = (row: any) => {
+  const displayNotice = (row: any) => {
     const message: ChatMessage = {
-      author: row.author,
-      message: row.response,
+      notice: row.notice,
       timestamp: row.created_at
     }
     
@@ -55,7 +53,7 @@ const ChatWindow = () => {
   return (
     <div className="chat-window">
       <div className="chat-header">
-        <div className="chat-title">Chat</div>
+        <div className="chat-title">Notices</div>
         <div className="chat-controls">
           <span className="control minimize"></span>
           <span className="control maximize"></span>
@@ -66,13 +64,13 @@ const ChatWindow = () => {
         <div className="chat-messages" ref={messagesRef}>
           {displayedMessages.length === 0 ? (
             <div className="chat-message system">
-              Waiting for chat messages...
+              Waiting for notices...
             </div>
           ) : (
             displayedMessages.map((msg, index) => (
               <div key={index} className="chat-message user">
                 <div className="message-content">
-                  <strong>{msg.author}:</strong> {msg.message}
+                  {msg.notice}
                 </div>
                 <div className="message-timestamp">
                   {new Date(msg.timestamp).toLocaleTimeString()}

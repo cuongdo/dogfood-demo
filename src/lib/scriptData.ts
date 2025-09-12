@@ -3,10 +3,9 @@ import { supabase } from './supabase'
 export interface ScriptRow {
   id: number
   created_at: string
-  type: 'chat_message' | 'query'
-  author: string | null
   query: string | null
   response: string | null
+  notice: string | null
 }
 
 export async function fetchAllScriptRows(): Promise<ScriptRow[]> {

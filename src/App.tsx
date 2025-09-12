@@ -1,6 +1,5 @@
 import './App.css'
 import PostgreSQLShell from './components/PostgreSQLShell'
-import ChatWindow from './components/ChatWindow'
 import Login from './components/Login'
 import ScriptDataViewer from './components/ScriptDataViewer'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
@@ -32,7 +31,6 @@ function AppContent() {
         </div>
         <div className="main-content">
           <PostgreSQLShell />
-          <ChatWindow />
         </div>
         <ScriptDataViewer />
       </div>

@@ -1,17 +1,14 @@
--- Create the script table for storing chat messages and SQL queries
+-- Create the script table with final schema (id, created_at, query, response, notice)
 CREATE TABLE script (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    type VARCHAR(20) NOT NULL CHECK (type IN ('chat_message', 'query')),
-    author VARCHAR(255),
     query TEXT,
-    response TEXT
+    response TEXT,
+    notice TEXT
 );
 
 -- Add indexes for better query performance
-CREATE INDEX idx_script_type ON script(type);
 CREATE INDEX idx_script_created_at ON script(created_at);
-CREATE INDEX idx_script_author ON script(author);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE script ENABLE ROW LEVEL SECURITY;
@@ -25,10 +22,13 @@ CREATE POLICY "Users can insert script records" ON script
     FOR INSERT TO authenticated
     WITH CHECK (true);
 
-CREATE POLICY "Users can update their own script records" ON script
+CREATE POLICY "Users can update script records" ON script
     FOR UPDATE TO authenticated
-    USING (author = auth.email() OR author IS NULL);
+    USING (true);
 
-CREATE POLICY "Users can delete their own script records" ON script
+CREATE POLICY "Users can delete script records" ON script
     FOR DELETE TO authenticated
-    USING (author = auth.email() OR author IS NULL);
+    USING (true);
+
+-- The table now has: id, created_at, query, response, notice
+-- All matching the final schema requirements

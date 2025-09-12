@@ -61,6 +61,6 @@
 
 .main-content {
   display: flex;
-  gap: 2rem;
+  justify-content: center;
   align-items: flex-start;
 }

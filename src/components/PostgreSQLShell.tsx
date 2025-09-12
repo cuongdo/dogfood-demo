@@ -3,14 +3,14 @@ import { useScriptOrchestrator } from '../contexts/ScriptOrchestratorContext'
 import './PostgreSQLShell.css'
 
 interface HistoryItem {
-  type: 'command' | 'result' | 'info'
+  type: 'command' | 'result' | 'info' | 'notice'
   content: string
 }
 
 const PostgreSQLShell = () => {
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<HistoryItem[]>([
-    { type: 'info', content: 'psql (15.3)' },
+    { type: 'info', content: 'psql (17.6)' },
     { type: 'info', content: 'Type "help" for help.' },
     { type: 'info', content: '' }
   ])
@@ -35,8 +35,16 @@ const PostgreSQLShell = () => {
 
   // Handle current row changes from orchestrator
   useEffect(() => {
-    if (currentRow && currentRow.type === 'query' && currentRow.query && currentRow.response) {
-      simulateQuery(currentRow)
+    if (currentRow) {
+      console.log('Current row:', currentRow)
+      console.log('Has query and response:', !!(currentRow.query && currentRow.response))
+      console.log('Has notice:', !!currentRow.notice)
+      
+      if (currentRow.query && currentRow.response) {
+        simulateQuery(currentRow)
+      } else if (currentRow.notice) {
+        displayNotice(currentRow)
+      }
     }
   }, [currentRow])
 
@@ -79,6 +87,22 @@ const PostgreSQLShell = () => {
     })
   }
 
+  const displayNotice = (row: any) => {
+    console.log('Displaying notice:', row.notice)
+    const noticeItem = {
+      type: 'notice' as const,
+      content: `NOTICE: ${row.notice}`
+    }
+    
+    console.log('Notice item:', noticeItem)
+    addToHistory([noticeItem])
+    
+    // Wait 2 seconds then notify completion
+    simulationTimeoutRef.current = setTimeout(() => {
+      onRowComplete()
+    }, 2000)
+  }
+
   const simulateTyping = (text: string, onComplete: () => void) => {
     let currentIndex = 0
     typingIntervalRef.current = setInterval(() => {
@@ -96,8 +120,10 @@ const PostgreSQLShell = () => {
   }
 
   const addToHistory = (items: HistoryItem[]) => {
+    console.log('Adding to history:', items)
     setHistory(prevHistory => {
       const newHistory = [...prevHistory, ...items]
+      console.log('New history:', newHistory)
       // Keep only the last MAX_HISTORY_LINES items
       return newHistory.slice(-MAX_HISTORY_LINES)
     })
@@ -114,6 +140,15 @@ const PostgreSQLShell = () => {
         content: row.response || 'No response available' 
       }
     ]
+    
+    // Add notice immediately after the result if it exists
+    if (row.notice) {
+      newItems.push({
+        type: 'notice' as const,
+        content: `NOTICE: ${row.notice}`
+      })
+    }
+    
     addToHistory(newItems)
     setInput('')
   }
