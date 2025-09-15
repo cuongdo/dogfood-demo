@@ -18,16 +18,17 @@ const PostgreSQLShell = () => {
   const [isSimulating, setIsSimulating] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const shellRef = useRef<HTMLDivElement>(null)
+  const shellContentRef = useRef<HTMLDivElement>(null)
   const simulationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   
   const { currentRow, onRowComplete, isActive } = useScriptOrchestrator()
 
   useEffect(() => {
-    if (shellRef.current) {
+    if (shellContentRef.current) {
       // Smooth scroll to bottom when new content is added
-      shellRef.current.scrollTo({
-        top: shellRef.current.scrollHeight,
+      shellContentRef.current.scrollTo({
+        top: shellContentRef.current.scrollHeight,
         behavior: 'smooth'
       })
     }
@@ -240,7 +241,7 @@ Informational
           <span className="control close"></span>
         </div>
       </div>
-      <div className="shell-content">
+      <div className="shell-content" ref={shellContentRef}>
         {history.map((item, index) => (
           <div key={index} className={`shell-line ${item.type}`}>
             {item.content.split('\n').map((line, lineIndex) => (
