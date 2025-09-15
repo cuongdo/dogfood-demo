@@ -243,11 +243,6 @@ Informational
     <div className="postgresql-shell" ref={shellRef} onClick={handleShellClick}>
       <div className="shell-header">
         <div className="shell-title">Multigres PostgreSQL Shell</div>
-        <div className="shell-controls">
-          <span className="control minimize"></span>
-          <span className="control maximize"></span>
-          <span className="control close"></span>
-        </div>
       </div>
       <div className="shell-content" ref={shellContentRef}>
         {history.map((item, index) => (
