@@ -1,7 +1,6 @@
 import './App.css'
 import PostgreSQLShell from './components/PostgreSQLShell'
 import Login from './components/Login'
-import ScriptDataViewer from './components/ScriptDataViewer'
 import TableGroups from './components/TableGroup'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ScriptOrchestratorProvider } from './contexts/ScriptOrchestratorContext'
@@ -36,7 +35,6 @@ function AppContent() {
             <PostgreSQLShell />
           </div>
           <TableGroups />
-          <ScriptDataViewer />
         </div>
       </ScriptOrchestratorProvider>
     </TableGroupProvider>

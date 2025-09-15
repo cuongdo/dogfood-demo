@@ -125,7 +125,7 @@ const PostgreSQLShell = () => {
         }
         onComplete()
       }
-    }, 50) // Typing speed
+    }, 17) // Typing speed (50ms / 3 ≈ 17ms)
   }
 
   const addToHistory = (items: HistoryItem[]) => {
