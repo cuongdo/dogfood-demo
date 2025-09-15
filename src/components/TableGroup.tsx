@@ -51,7 +51,7 @@ const TableGroup: React.FC<TableGroupData> = ({ name, tables, color = '#4a9eff',
               ) : (
                 shard.tables.map((table, tableIndex) => (
                   <div key={tableIndex} className="table-item">
-                    {table.name}
+                    {table.name}{shard.index + 1}
                   </div>
                 ))
               )}
