@@ -110,6 +110,14 @@ const PostgreSQLShell = () => {
       if (currentIndex <= text.length) {
         setInput(text.substring(0, currentIndex))
         currentIndex++
+
+        // Scroll to bottom after each character during typing simulation
+        if (shellContentRef.current) {
+          shellContentRef.current.scrollTo({
+            top: shellContentRef.current.scrollHeight,
+            behavior: 'smooth'
+          })
+        }
       } else {
         if (typingIntervalRef.current) {
           clearInterval(typingIntervalRef.current)
@@ -249,18 +257,31 @@ Informational
             ))}
           </div>
         ))}
-        <form onSubmit={handleSubmit} className="shell-input-form">
+        <div className="shell-input-form">
           <span className="prompt">postgres=# </span>
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="shell-input"
-            autoFocus
-            disabled={isSimulating}
-          />
-        </form>
+          {isSimulating ? (
+            <div className="shell-input-display">
+              {input}
+              <span className="cursor">|</span>
+            </div>
+          ) : (
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  handleSubmit(e as any)
+                }
+              }}
+              className="shell-input"
+              autoFocus
+              disabled={isSimulating}
+            />
+          )}
+        </div>
       </div>
     </div>
   )

@@ -112,13 +112,15 @@
 
 .shell-input-form {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .prompt {
   color: #4a9eff;
-  margin-right: 8px;
   font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .shell-input {
@@ -134,6 +136,29 @@
 
 .shell-input::placeholder {
   color: #666666;
+}
+
+.shell-input-display {
+  background: transparent;
+  color: #ffffff;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  flex: 1;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  min-height: 1.4em;
+  line-height: 1.4;
+}
+
+.cursor {
+  color: #ffffff;
+  animation: blink 1s infinite;
+  font-weight: normal;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 /* Scrollbar styling */
