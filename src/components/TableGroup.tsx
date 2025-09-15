@@ -3,8 +3,8 @@ import './TableGroup.css'
 import { useTableGroup, TableGroupData } from '../contexts/TableGroupContext'
 
 const TableGroup: React.FC<TableGroupData> = ({ name, tables, color = '#4a9eff', shardCount = 1 }) => {
-  // Sort tables alphabetically
-  const sortedTables = [...tables].sort((a, b) => a.name.localeCompare(b.name))
+  // Keep tables in insertion order (no sorting)
+  const orderedTables = [...tables]
 
   // Default group is special - it has no shards, just tables
   const isDefaultGroup = name === 'default'
@@ -16,10 +16,10 @@ const TableGroup: React.FC<TableGroupData> = ({ name, tables, color = '#4a9eff',
           {name}
         </div>
         <div className="tables-container">
-          {sortedTables.length === 0 ? (
+          {orderedTables.length === 0 ? (
             <div className="no-tables-message">(no tables)</div>
           ) : (
-            sortedTables.map((table, index) => (
+            orderedTables.map((table, index) => (
               <div key={index} className="table-item">
                 {table.name}
               </div>
@@ -33,7 +33,7 @@ const TableGroup: React.FC<TableGroupData> = ({ name, tables, color = '#4a9eff',
   // Non-default groups have shards
   const shards = Array.from({ length: shardCount }, (_, index) => ({
     index,
-    tables: sortedTables // Each shard contains all tables in sorted order
+    tables: orderedTables // Each shard contains all tables in insertion order
   }))
 
   return (

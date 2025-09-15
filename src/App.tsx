@@ -31,6 +31,9 @@ function AppContent() {
               Sign Out
             </button>
           </div>
+          <div className="demo-notice">
+            This is a SIMULATED DEMO for my onboarding dogfooding project. It's meant to show a possible future of Multigres. This does not reflect any actual decisions regarding SQL syntax or UX.
+          </div>
           <div className="main-content">
             <PostgreSQLShell />
           </div>
