@@ -8,11 +8,12 @@ export interface TableGroupData {
   name: string
   tables: Table[]
   color?: string
+  shardCount?: number
 }
 
 interface TableGroupContextType {
   tableGroups: TableGroupData[]
-  addTableGroup: (name: string, color?: string) => void
+  addTableGroup: (name: string, shardCount?: number, color?: string) => void
   addTableToGroup: (groupName: string, tableName: string) => void
   processAddedItems: (addedItems: string[]) => void
 }
@@ -51,20 +52,26 @@ export function TableGroupProvider({ children }: TableGroupProviderProps) {
     {
       name: 'default',
       tables: [],
-      color: '#4a9eff'
+      color: '#4a9eff',
+      shardCount: 0 // Default group has no shards
     }
   ])
 
-  const addTableGroup = (name: string, color?: string) => {
+  const addTableGroup = (name: string, shardCount?: number, color?: string) => {
     setTableGroups(prev => {
       // Don't add if group already exists
       if (prev.some(group => group.name === name)) {
         return prev
       }
+
+      // Default group is special - it has no shards
+      const finalShardCount = name === 'default' ? 0 : (shardCount || 1)
+
       return [...prev, {
         name,
         tables: [],
-        color: color || generateColor()
+        color: color || generateColor(),
+        shardCount: finalShardCount
       }]
     })
   }
@@ -100,8 +107,15 @@ export function TableGroupProvider({ children }: TableGroupProviderProps) {
           // Then add the table to it
           addTableToGroup(groupName, tableName)
         }
+      } else if (item.includes(':')) {
+        // Format: "TABLEGROUP:SHARDCOUNT"
+        const [groupName, shardCountStr] = item.split(':')
+        const shardCount = parseInt(shardCountStr, 10)
+        if (groupName && !isNaN(shardCount) && shardCount > 0) {
+          addTableGroup(groupName, shardCount)
+        }
       } else {
-        // Format: "TABLEGROUP"
+        // Format: "TABLEGROUP" (default to 1 shard)
         addTableGroup(item)
       }
     })

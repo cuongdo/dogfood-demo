@@ -10,6 +10,7 @@ At the start of the demo, there will be a single TableGroup named `default`.
 
 The `scripts` table will now contain the new column `added`. `added` is a Postgres list containing strings in one of two forms:
 
-- `TABLEGROUP`: this indicates that the given TABLEGROUP should be added to the TableGroup UI component. For example an `added` entry of `users` will add the new TableGroup `users` to the TableGroup component.
+- `TABLEGROUP`: this indicates that the given TABLEGROUP should be added to the TableGroup UI component with the specified number of shards. For example an `added` entry of `users:4` will add the new TableGroup `users` to the TableGroup component with 4 shards. 
+    - In the UI, each shard should be represented by a rounded rectangle inside of the table group rectangle. Each table in the TableGroup should appear in sorted order in each shard for that TableGroup.
 - `TABLEGROUP.TABLE`: indicates that the given TABLE should be added to the specified TABLEGROUP. For example, `users.emails` means that the `emails` table should be added to the `users` tablespace.
 
