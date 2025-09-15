@@ -23,7 +23,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
   width: 100%;
   max-width: 1200px;
 }
@@ -47,6 +47,18 @@
 
 .app-header h1 {
   margin: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-logo {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
 }
 
 .sign-out-btn {
@@ -94,12 +106,13 @@
   justify-content: center;
   align-items: flex-start;
   width: 100%;
+  min-width: 0;
 }
 
 /* Mobile app responsiveness */
 @media (max-width: 768px) {
   .app-container {
-    gap: 1.5rem;
+    gap: 0.75rem;
   }
 
   .app-container h1 {
@@ -112,6 +125,10 @@
     text-align: center;
   }
 
+  .header-logo {
+    height: 48px;
+  }
+
   .demo-notice {
     font-size: 0.8rem;
     padding: 0.75rem 1rem;
@@ -121,7 +138,7 @@
 
 @media (max-width: 480px) {
   .app-container {
-    gap: 1rem;
+    gap: 0.5rem;
   }
 
   .app-container h1 {
@@ -131,6 +148,15 @@
   .app-header {
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .header-left {
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .header-logo {
+    height: 40px;
   }
 
   .demo-notice {
