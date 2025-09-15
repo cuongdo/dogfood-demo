@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useScriptOrchestrator } from '../contexts/ScriptOrchestratorContext'
+import { useTableGroup } from '../contexts/TableGroupContext'
 import './PostgreSQLShell.css'
 
 interface HistoryItem {
@@ -24,6 +25,7 @@ const PostgreSQLShell = () => {
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   
   const { currentRow, onRowComplete, isActive, isPaused, togglePause, skipToNext } = useScriptOrchestrator()
+  const { processAddedItems } = useTableGroup()
 
   useEffect(() => {
     if (shellContentRef.current) {
@@ -91,7 +93,7 @@ const PostgreSQLShell = () => {
           setNoticeDisplayed(false)
           onRowComplete()
         }
-        simulationTimeoutRef.current = setTimeout(completeAfterDelay, 5000)
+        simulationTimeoutRef.current = setTimeout(completeAfterDelay, 3000)
         return
       } else if (currentRow.notice && !noticeDisplayed) {
         // If it's just a notice and hasn't been displayed yet
@@ -253,6 +255,11 @@ const PostgreSQLShell = () => {
 
     addToHistory(newItems)
     setInput('')
+
+    // Process TableGroup updates immediately after notice is displayed
+    if (row.added) {
+      processAddedItems(row.added)
+    }
   }
 
 

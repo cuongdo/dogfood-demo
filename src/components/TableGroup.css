@@ -23,7 +23,8 @@
   border-radius: 8px;
   padding: 0;
   min-width: 200px;
-  max-width: 300px;
+  max-width: none;
+  width: fit-content;
   position: relative;
   overflow: hidden;
 }
@@ -48,8 +49,10 @@
 .shards-container {
   padding: 1rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
 }
 
 .shard {
@@ -58,6 +61,9 @@
   border-radius: 12px;
   padding: 0.75rem;
   position: relative;
+  flex: 1;
+  min-width: 150px;
+  max-width: 250px;
 }
 
 .shard-header {
@@ -98,4 +104,24 @@
   text-align: center;
   padding: 1rem 0.75rem;
   font-size: 0.85rem;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .shards-container {
+    flex-direction: column;
+  }
+
+  .shard {
+    flex: none;
+    min-width: auto;
+    max-width: none;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+  .shard {
+    min-width: 120px;
+    max-width: 200px;
+  }
 }

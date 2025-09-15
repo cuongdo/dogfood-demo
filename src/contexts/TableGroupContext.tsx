@@ -32,17 +32,17 @@ interface TableGroupProviderProps {
   children: ReactNode
 }
 
-// Generate random colors for new table groups
+// Generate random colors for new table groups - muted colors for better readability
 const generateColor = () => {
   const colors = [
-    '#4a9eff', // blue
-    '#ff6b4a', // red
-    '#4aff6b', // green
-    '#ff4aff', // magenta
-    '#ffaa4a', // orange
-    '#4affff', // cyan
-    '#aa4aff', // purple
-    '#ffff4a', // yellow
+    '#6b8db5', // muted blue
+    '#b56b6b', // muted red
+    '#6bb56b', // muted green
+    '#b56bb5', // muted purple
+    '#b5946b', // muted orange/brown
+    '#6bb5b5', // muted teal
+    '#9b6bb5', // muted violet
+    '#b5b56b', // muted olive
   ]
   return colors[Math.floor(Math.random() * colors.length)]
 }
