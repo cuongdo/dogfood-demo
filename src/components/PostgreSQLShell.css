@@ -26,6 +26,60 @@
   font-size: 13px;
 }
 
+.shell-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pause-btn {
+  background-color: #4a9eff;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 40px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pause-btn:hover {
+  background-color: #3a8eef;
+}
+
+.pause-btn:active {
+  background-color: #2a7edf;
+}
+
+.next-btn {
+  background-color: #28a745;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.next-btn:hover {
+  background-color: #218838;
+}
+
+.next-btn:active {
+  background-color: #1e7e34;
+}
+
 
 .shell-content {
   flex: 1;

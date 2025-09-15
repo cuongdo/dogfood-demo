@@ -16,13 +16,14 @@ const PostgreSQLShell = () => {
   ])
   const MAX_HISTORY_LINES = 50 // Maximum number of history items to keep
   const [isSimulating, setIsSimulating] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [queryExecuted, setQueryExecuted] = useState(false)
+  const [noticeDisplayed, setNoticeDisplayed] = useState(false)
   const shellRef = useRef<HTMLDivElement>(null)
   const shellContentRef = useRef<HTMLDivElement>(null)
   const simulationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   
-  const { currentRow, onRowComplete, isActive } = useScriptOrchestrator()
+  const { currentRow, onRowComplete, isActive, isPaused, togglePause, skipToNext } = useScriptOrchestrator()
 
   useEffect(() => {
     if (shellContentRef.current) {
@@ -67,24 +68,102 @@ const PostgreSQLShell = () => {
     }
   }
 
+  const handleSkipToNext = () => {
+    clearTimeouts()
+
+    if (currentRow && isSimulating) {
+      // If we haven't executed the query yet, complete the current display
+      if (currentRow.query && currentRow.response && !queryExecuted) {
+        // Complete typing and show the full result immediately
+        setInput('')
+        executeSimulatedQuery(currentRow)
+        setQueryExecuted(true)
+
+        // Start the completion delay timer so demo continues normally
+        const completeAfterDelay = () => {
+          if (isPaused) {
+            // If paused, check again in 100ms
+            simulationTimeoutRef.current = setTimeout(completeAfterDelay, 100)
+            return
+          }
+          setIsSimulating(false)
+          setQueryExecuted(false)
+          setNoticeDisplayed(false)
+          onRowComplete()
+        }
+        simulationTimeoutRef.current = setTimeout(completeAfterDelay, 5000)
+        return
+      } else if (currentRow.notice && !noticeDisplayed) {
+        // If it's just a notice and hasn't been displayed yet
+        const noticeItem = {
+          type: 'notice' as const,
+          content: `NOTICE: ${currentRow.notice}`
+        }
+        addToHistory([noticeItem])
+        setNoticeDisplayed(true)
+
+        // Start the completion delay timer so demo continues normally
+        const completeAfterNotice = () => {
+          if (isPaused) {
+            // If paused, check again in 100ms
+            simulationTimeoutRef.current = setTimeout(completeAfterNotice, 100)
+            return
+          }
+          setIsSimulating(false)
+          setNoticeDisplayed(false)
+          onRowComplete()
+        }
+        simulationTimeoutRef.current = setTimeout(completeAfterNotice, 2000)
+        return
+      }
+
+      // If query and notice are already displayed, then skip to next
+      setIsSimulating(false)
+      setQueryExecuted(false)
+      setNoticeDisplayed(false)
+      skipToNext()
+    } else {
+      // If not simulating, skip to next
+      skipToNext()
+    }
+  }
+
   const simulateQuery = (row: any) => {
     if (isSimulating) return // Prevent multiple simultaneous simulations
-    
+
     setIsSimulating(true)
+    setQueryExecuted(false)
+    setNoticeDisplayed(false)
     clearTimeouts()
-    
+
     // Simulate typing the query
     simulateTyping(row.query, () => {
       // After typing is complete, execute the query
-      simulationTimeoutRef.current = setTimeout(() => {
+      const executeAfterTyping = () => {
+        if (isPaused) {
+          // If paused, check again in 100ms
+          simulationTimeoutRef.current = setTimeout(executeAfterTyping, 100)
+          return
+        }
+
         executeSimulatedQuery(row)
-        
-        // Wait 2 seconds then notify completion
-        simulationTimeoutRef.current = setTimeout(() => {
+        setQueryExecuted(true)
+
+        // Wait 5 seconds then notify completion
+        const completeAfterDelay = () => {
+          if (isPaused) {
+            // If paused, check again in 100ms
+            simulationTimeoutRef.current = setTimeout(completeAfterDelay, 100)
+            return
+          }
           setIsSimulating(false)
+          setQueryExecuted(false)
+          setNoticeDisplayed(false)
           onRowComplete()
-        }, 2000)
-      }, 500)
+        }
+        simulationTimeoutRef.current = setTimeout(completeAfterDelay, 5000)
+      }
+      simulationTimeoutRef.current = setTimeout(executeAfterTyping, 500)
     })
   }
 
@@ -94,19 +173,32 @@ const PostgreSQLShell = () => {
       type: 'notice' as const,
       content: `NOTICE: ${row.notice}`
     }
-    
+
     console.log('Notice item:', noticeItem)
     addToHistory([noticeItem])
-    
+    setNoticeDisplayed(true)
+
     // Wait 2 seconds then notify completion
-    simulationTimeoutRef.current = setTimeout(() => {
+    const completeAfterNotice = () => {
+      if (isPaused) {
+        // If paused, check again in 100ms
+        simulationTimeoutRef.current = setTimeout(completeAfterNotice, 100)
+        return
+      }
+      setNoticeDisplayed(false)
       onRowComplete()
-    }, 2000)
+    }
+    simulationTimeoutRef.current = setTimeout(completeAfterNotice, 2000)
   }
 
   const simulateTyping = (text: string, onComplete: () => void) => {
     let currentIndex = 0
     typingIntervalRef.current = setInterval(() => {
+      // Check if paused, if so skip this interval
+      if (isPaused) {
+        return
+      }
+
       if (currentIndex <= text.length) {
         setInput(text.substring(0, currentIndex))
         currentIndex++
@@ -140,109 +232,45 @@ const PostgreSQLShell = () => {
 
   const executeSimulatedQuery = (row: any) => {
     const newItems = [
-      { 
-        type: 'command' as const, 
-        content: `postgres=# ${row.query}` 
+      {
+        type: 'command' as const,
+        content: `postgres=# ${row.query}`
       },
-      { 
-        type: 'result' as const, 
-        content: row.response || 'No response available' 
+      {
+        type: 'result' as const,
+        content: row.response || 'No response available'
       }
     ]
-    
+
     // Add notice immediately after the result if it exists
     if (row.notice) {
       newItems.push({
         type: 'notice' as const,
         content: `NOTICE: ${row.notice}`
       })
+      setNoticeDisplayed(true)
     }
-    
+
     addToHistory(newItems)
     setInput('')
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isSimulating) return
 
-    const trimmedInput = input.trim().toLowerCase()
-    const commandItem = { type: 'command' as const, content: `postgres=# ${input}` }
-    let responseItem: HistoryItem
-    
-    if (trimmedInput === 'help') {
-      responseItem = { 
-        type: 'result', 
-        content: `You are using psql, the command-line interface to PostgreSQL.
-Type:  \\copyright for distribution terms
-       \\h for help with SQL commands
-       \\? for help with psql commands
-       \\g or terminate with semicolon to execute query
-       \\q to quit` 
-      }
-    } else if (trimmedInput === '\\q') {
-      responseItem = { type: 'info', content: 'Connection closed.' }
-    } else if (trimmedInput === '\\l' || trimmedInput === '\\list') {
-      responseItem = { 
-        type: 'result', 
-        content: `                                  List of databases
-   Name    |  Owner   | Encoding |   Collate   |    Ctype    |   Access privileges   
------------+----------+----------+-------------+-------------+-----------------------
- postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
- template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
-           |          |          |             |             | postgres=CTc/postgres
- template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
-           |          |          |             |             | postgres=CTc/postgres
-(3 rows)` 
-      }
-    } else if (trimmedInput === '\\dt') {
-      responseItem = { 
-        type: 'result', 
-        content: `         List of relations
- Schema | Name  | Type  |  Owner   
---------+-------+-------+----------
- public | users | table | postgres
- public | script | table | postgres
-(2 rows)` 
-      }
-    } else if (trimmedInput.startsWith('select') || trimmedInput.includes('select')) {
-      responseItem = { 
-        type: 'result', 
-        content: ` id |   name   |       email        
-----+----------+--------------------
-  1 | John Doe | john@example.com
-  2 | Jane Doe | jane@example.com
-(2 rows)` 
-      }
-    } else if (trimmedInput === '\\?') {
-      responseItem = { 
-        type: 'result', 
-        content: `General
-  \\copyright             show PostgreSQL usage and distribution terms
-  \\g [FILE] or ;         execute query (and send results to file or |pipe)
-  \\h [NAME]              help on syntax of SQL commands, * for all commands
-  \\q                     quit psql
-
-Informational
-  \\l[+]   [PATTERN]      list databases
-  \\dt[S+] [PATTERN]      list tables` 
-      }
-    } else {
-      responseItem = { type: 'result', content: `ERROR:  syntax error at or near "${input}"` }
-    }
-
-    addToHistory([commandItem, responseItem])
-    setInput('')
-  }
-
-  const handleShellClick = () => {
-    inputRef.current?.focus()
-  }
 
   return (
-    <div className="postgresql-shell" ref={shellRef} onClick={handleShellClick}>
+    <div className="postgresql-shell" ref={shellRef}>
       <div className="shell-header">
         <div className="shell-title">Multigres PostgreSQL Shell</div>
+        {isActive && (
+          <div className="shell-controls">
+            <button onClick={togglePause} className="pause-btn">
+              {isPaused ? '▶' : '⏸'}
+            </button>
+            <button onClick={handleSkipToNext} className="next-btn">
+              ⏭
+            </button>
+          </div>
+        )}
       </div>
       <div className="shell-content" ref={shellContentRef}>
         {history.map((item, index) => (
@@ -254,28 +282,10 @@ Informational
         ))}
         <div className="shell-input-form">
           <span className="prompt">postgres=# </span>
-          {isSimulating ? (
-            <div className="shell-input-display">
-              {input}
-              <span className="cursor">|</span>
-            </div>
-          ) : (
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  handleSubmit(e as any)
-                }
-              }}
-              className="shell-input"
-              autoFocus
-              disabled={isSimulating}
-            />
-          )}
+          <div className="shell-input-display">
+            {input}
+            {isSimulating && <span className="cursor">|</span>}
+          </div>
         </div>
       </div>
     </div>

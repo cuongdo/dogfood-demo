@@ -7,7 +7,10 @@ interface ScriptOrchestratorContextType {
   currentRowIndex: number
   totalRows: number
   isActive: boolean
+  isPaused: boolean
   onRowComplete: () => void
+  togglePause: () => void
+  skipToNext: () => void
 }
 
 const ScriptOrchestratorContext = createContext<ScriptOrchestratorContextType | undefined>(undefined)
@@ -28,6 +31,7 @@ export function ScriptOrchestratorProvider({ children }: ScriptOrchestratorProvi
   const [allRows, setAllRows] = useState<ScriptRow[]>([])
   const [currentRowIndex, setCurrentRowIndex] = useState(0)
   const [isActive, setIsActive] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
   const { processAddedItems } = useTableGroup()
 
   // Load all script rows on mount
@@ -63,14 +67,36 @@ export function ScriptOrchestratorProvider({ children }: ScriptOrchestratorProvi
     }
   }
 
-  const currentRow = isActive && currentRowIndex < allRows.length ? allRows[currentRowIndex] : null
+  const togglePause = () => {
+    setIsPaused(prev => !prev)
+  }
+
+  const skipToNext = () => {
+    // Process added items from current row before skipping
+    const currentRow = allRows[currentRowIndex]
+    if (currentRow?.added) {
+      processAddedItems(currentRow.added)
+    }
+
+    const nextIndex = currentRowIndex + 1
+    if (nextIndex < allRows.length) {
+      setCurrentRowIndex(nextIndex)
+    } else {
+      setIsActive(false)
+    }
+  }
+
+  const currentRow = isActive && !isPaused && currentRowIndex < allRows.length ? allRows[currentRowIndex] : null
 
   const value = {
     currentRow,
     currentRowIndex,
     totalRows: allRows.length,
     isActive,
+    isPaused,
     onRowComplete,
+    togglePause,
+    skipToNext,
   }
 
   return (
