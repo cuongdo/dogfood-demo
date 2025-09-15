@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { fetchAllScriptRows, ScriptRow } from '../lib/scriptData'
+import { useTableGroup } from './TableGroupContext'
 
 interface ScriptOrchestratorContextType {
   currentRow: ScriptRow | null
@@ -27,6 +28,7 @@ export function ScriptOrchestratorProvider({ children }: ScriptOrchestratorProvi
   const [allRows, setAllRows] = useState<ScriptRow[]>([])
   const [currentRowIndex, setCurrentRowIndex] = useState(0)
   const [isActive, setIsActive] = useState(false)
+  const { processAddedItems } = useTableGroup()
 
   // Load all script rows on mount
   useEffect(() => {
@@ -47,6 +49,12 @@ export function ScriptOrchestratorProvider({ children }: ScriptOrchestratorProvi
   }, [])
 
   const onRowComplete = () => {
+    // Process added items from the current row
+    const currentRow = allRows[currentRowIndex]
+    if (currentRow?.added) {
+      processAddedItems(currentRow.added)
+    }
+
     const nextIndex = currentRowIndex + 1
     if (nextIndex < allRows.length) {
       setCurrentRowIndex(nextIndex)

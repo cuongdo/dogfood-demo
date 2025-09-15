@@ -6,6 +6,7 @@ export interface ScriptRow {
   query: string | null
   response: string | null
   notice: string | null
+  added: string[] | null
 }
 
 export async function fetchAllScriptRows(): Promise<ScriptRow[]> {

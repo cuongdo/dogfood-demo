@@ -33,7 +33,7 @@ const Login = () => {
     return (
       <div className="login-container">
         <div className="login-form">
-          <h1>Multigres Demo</h1>
+          <h1>Multigres Demo<br/>(TOP SECRET)</h1>
           <h2>Check Your Email</h2>
           <p className="email-sent-message">
             We've sent a magic link to <strong>{email}</strong>. 
@@ -56,7 +56,7 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-form">
-        <h1>Multigres Demo</h1>
+        <h1>Multigres Demo<br/>(TOP SECRET)</h1>
         <h2>Sign In with Magic Link</h2>
         <p className="login-description">
           Enter your email address and we'll send you a magic link to sign in.

@@ -1,0 +1,70 @@
+.table-groups-container {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.table-groups-title {
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.table-groups-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.table-group {
+  border: 2px solid;
+  border-radius: 8px;
+  padding: 0;
+  min-width: 200px;
+  max-width: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
+.table-group-name {
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tables-container {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.table-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  color: #ffffff;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.85rem;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.table-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.no-tables-message {
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  text-align: center;
+  padding: 1rem 0.75rem;
+  font-size: 0.85rem;
+}
