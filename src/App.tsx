@@ -35,7 +35,7 @@ function AppContent() {
             </button>
           </div>
           <div className="demo-notice">
-            This is a SIMULATED DEMO for my dogfooding project. It's shows one possible future.
+            This is a SIMULATED DEMO for my dogfooding project. It shows one possible future.
           </div>
           <div className="main-content">
             <PostgreSQLShell />
