@@ -47,7 +47,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signInWithEmail = async (email: string) => {
     // Get the current origin (protocol + hostname + port) for redirect
-    const redirectTo = `${window.location.origin}/`
+    const redirectTo = window.location.origin
+
+    console.log('Sign in redirect URL:', redirectTo) // Debug log
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
