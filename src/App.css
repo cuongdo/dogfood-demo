@@ -109,6 +109,77 @@
   min-width: 0;
 }
 
+.scroll-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: rgba(74, 158, 255, 0.9);
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(74, 158, 255, 0.3);
+}
+
+.scroll-indicator:hover {
+  background-color: rgba(74, 158, 255, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.scroll-arrows {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: -4px;
+}
+
+.arrow {
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 0.6;
+  animation: bounce 2s infinite;
+}
+
+.arrow:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.arrow:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.scroll-text {
+  color: white;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    opacity: 0.6;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
 /* Mobile app responsiveness */
 @media (max-width: 768px) {
   .app-container {
@@ -133,6 +204,16 @@
     font-size: 0.8rem;
     padding: 0.75rem 1rem;
     margin: -0.5rem auto 1rem auto;
+  }
+
+  .scroll-indicator {
+    bottom: 15px;
+    right: 15px;
+    padding: 10px 14px;
+  }
+
+  .scroll-text {
+    font-size: 10px;
   }
 }
 
@@ -168,5 +249,19 @@
   .sign-out-btn {
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
+  }
+
+  .scroll-indicator {
+    bottom: 10px;
+    right: 10px;
+    padding: 8px 12px;
+  }
+
+  .arrow {
+    font-size: 12px;
+  }
+
+  .scroll-text {
+    font-size: 9px;
   }
 }
