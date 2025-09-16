@@ -72,7 +72,7 @@ export function ScriptOrchestratorProvider({ children }: ScriptOrchestratorProvi
     }
   }
 
-  const currentRow = isActive && !isPaused && currentRowIndex < allRows.length ? allRows[currentRowIndex] : null
+  const currentRow = isActive && currentRowIndex < allRows.length ? allRows[currentRowIndex] : null
 
   const value = {
     currentRow,

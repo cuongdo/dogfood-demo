@@ -19,12 +19,14 @@ const PostgreSQLShell = () => {
   const [isSimulating, setIsSimulating] = useState(false)
   const [queryExecuted, setQueryExecuted] = useState(false)
   const [noticeDisplayed, setNoticeDisplayed] = useState(false)
+  const [processedRowIndex, setProcessedRowIndex] = useState(-1)
+  const [pausedRowCompleted, setPausedRowCompleted] = useState(false)
   const shellRef = useRef<HTMLDivElement>(null)
   const shellContentRef = useRef<HTMLDivElement>(null)
   const simulationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   
-  const { currentRow, onRowComplete, isActive, isPaused, togglePause, skipToNext } = useScriptOrchestrator()
+  const { currentRow, onRowComplete, isActive, isPaused, togglePause, skipToNext, currentRowIndex, totalRows } = useScriptOrchestrator()
   const { processAddedItems } = useTableGroup()
 
   useEffect(() => {
@@ -39,18 +41,49 @@ const PostgreSQLShell = () => {
 
   // Handle current row changes from orchestrator
   useEffect(() => {
-    if (currentRow) {
-      console.log('Current row:', currentRow)
-      console.log('Has query and response:', !!(currentRow.query && currentRow.response))
-      console.log('Has notice:', !!currentRow.notice)
-      
-      if (currentRow.query && currentRow.response) {
-        simulateQuery(currentRow)
-      } else if (currentRow.notice) {
-        displayNotice(currentRow)
+    if (currentRow && currentRowIndex !== processedRowIndex) {
+      setProcessedRowIndex(currentRowIndex)
+      setPausedRowCompleted(false)
+
+      if (isPaused) {
+        // When paused, display content immediately without simulation
+        if (currentRow.query && currentRow.response) {
+          executeSimulatedQuery(currentRow)
+          setPausedRowCompleted(true)
+        } else if (currentRow.notice) {
+          const noticeItem = {
+            type: 'notice' as const,
+            content: `NOTICE: ${currentRow.notice}`
+          }
+          addToHistory([noticeItem])
+          setPausedRowCompleted(true)
+        }
+      } else {
+        // When not paused, use normal simulation
+        if (currentRow.query && currentRow.response) {
+          simulateQuery(currentRow)
+        } else if (currentRow.notice) {
+          displayNotice(currentRow)
+        }
       }
     }
-  }, [currentRow])
+  }, [currentRow, isPaused, currentRowIndex, processedRowIndex])
+
+  // Handle resuming after pause when row was completed while paused
+  useEffect(() => {
+    if (!isPaused && pausedRowCompleted && currentRowIndex === processedRowIndex) {
+      // Row was completed while paused, now resume by moving to next
+      const completeAfterResume = () => {
+        setPausedRowCompleted(false)
+        setProcessedRowIndex(-1)
+        onRowComplete()
+      }
+
+      // Small delay to let the unpause action complete
+      const resumeTimeout = setTimeout(completeAfterResume, 100)
+      return () => clearTimeout(resumeTimeout)
+    }
+  }, [isPaused, pausedRowCompleted, currentRowIndex, processedRowIndex, onRowComplete])
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -73,6 +106,12 @@ const PostgreSQLShell = () => {
   const handleSkipToNext = () => {
     clearTimeouts()
 
+    // If paused and not currently simulating, just advance to next row
+    if (isPaused && !isSimulating && currentRowIndex < totalRows - 1) {
+      skipToNext()
+      return
+    }
+
     if (currentRow && isSimulating) {
       // If we haven't executed the query yet, complete the current display
       if (currentRow.query && currentRow.response && !queryExecuted) {
@@ -91,9 +130,11 @@ const PostgreSQLShell = () => {
           setIsSimulating(false)
           setQueryExecuted(false)
           setNoticeDisplayed(false)
+          setProcessedRowIndex(-1)
+          setPausedRowCompleted(false)
           onRowComplete()
         }
-        simulationTimeoutRef.current = setTimeout(completeAfterDelay, 3000)
+        simulationTimeoutRef.current = setTimeout(completeAfterDelay, 5000)
         return
       } else if (currentRow.notice && !noticeDisplayed) {
         // If it's just a notice and hasn't been displayed yet
@@ -113,6 +154,8 @@ const PostgreSQLShell = () => {
           }
           setIsSimulating(false)
           setNoticeDisplayed(false)
+          setProcessedRowIndex(-1)
+          setPausedRowCompleted(false)
           onRowComplete()
         }
         simulationTimeoutRef.current = setTimeout(completeAfterNotice, 2000)
@@ -123,6 +166,8 @@ const PostgreSQLShell = () => {
       setIsSimulating(false)
       setQueryExecuted(false)
       setNoticeDisplayed(false)
+      setProcessedRowIndex(-1)
+      setPausedRowCompleted(false)
       skipToNext()
     } else {
       // If not simulating, skip to next
@@ -161,6 +206,8 @@ const PostgreSQLShell = () => {
           setIsSimulating(false)
           setQueryExecuted(false)
           setNoticeDisplayed(false)
+          setProcessedRowIndex(-1)
+          setPausedRowCompleted(false)
           onRowComplete()
         }
         simulationTimeoutRef.current = setTimeout(completeAfterDelay, 5000)
